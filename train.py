@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from keras.datasets import fashion_mnist, mnist
 import wandb
 
-parameters_dict = {
+default_params = {
     "wandb_project": "SWEEP_PROJECT01",
     "wandb_entity": "your_entity_name",
     "dataset": "mnist",
@@ -23,39 +23,38 @@ parameters_dict = {
     "weight_decay": 0,
     "weight_init": "xavier",
     "hidden_layers": 3,
-    "neurons": 64
+    "neurons": 64,
+    "activation": "sigmoid"
 }
-parameters_dict["activation"] = "sigmoid"
-
 parser = argparse.ArgumentParser()
-parser.add_argument("--wandb_project", type=str, default=default_params["wandb_project"], help="WandB project name")
-parser.add_argument("--wandb_entity", type=str, default=default_params["wandb_entity"], help="WandB entity name")
-parser.add_argument("--dataset", type=str, default=default_params["dataset"], help="Dataset to use: mnist or fashion_mnist")
-parser.add_argument("--epochs", type=int, default=default_params["epochs"], help="Number of epochs")
-parser.add_argument("--batch_size", type=int, default=default_params["batch_size"], help="Batch size")
-parser.add_argument("--loss", type=str, default=default_params["loss"], help="Loss function: cross_entropy or mean_squared_error")
-parser.add_argument("--optimizer", type=str, default=default_params["optimizer"], help="Optimizer: sgd, momentum, nag, rmsprop, adam, or nadam")
-parser.add_argument("--learning_rate", type=float, default=default_params["learning_rate"], help="Learning rate")
-parser.add_argument("--momentum", type=float, default=default_params["momentum"], help="Momentum")
-parser.add_argument("--beta", type=float, default=default_params["beta"], help="Beta (for RMSProp)")
-parser.add_argument("--beta1", type=float, default=default_params["beta1"], help="Beta1 (for Adam/Nadam)")
-parser.add_argument("--beta2", type=float, default=default_params["beta2"], help="Beta2 (for Adam/Nadam)")
-parser.add_argument("--epsilon", type=float, default=default_params["epsilon"], help="Epsilon (for Adam/Nadam)")
-parser.add_argument("--weight_decay", type=float, default=default_params["weight_decay"], help="Weight decay")
-parser.add_argument("--weight_init", type=str, default=default_params["weight_init"], help="Weight initialization: random or xavier")
-parser.add_argument("--hidden_layers", type=int, default=default_params["hidden_layers"], help="Number of hidden layers")
-parser.add_argument("--neurons", type=int, default=default_params["neurons"], help="Number of neurons per hidden layer")
-parser.add_argument("--activation", type=str, default=default_params["activation"], help="Activation function: sigmoid, tanh, or relu")
-parser.add_argument("--sweep", action="store_true", help="Run W&B sweep agent")
+parser.add_argument("--wandb_project", type=str, default=default_params["wandb_project"])
+parser.add_argument("--wandb_entity", type=str, default=default_params["wandb_entity"])
+parser.add_argument("--dataset", type=str, default=default_params["dataset"])
+parser.add_argument("--epochs", type=int, default=default_params["epochs"])
+parser.add_argument("--batch_size", type=int, default=default_params["batch_size"])
+parser.add_argument("--loss", type=str, default=default_params["loss"])
+parser.add_argument("--optimizer", type=str, default=default_params["optimizer"])
+parser.add_argument("--learning_rate", type=float, default=default_params["learning_rate"])
+parser.add_argument("--momentum", type=float, default=default_params["momentum"])
+parser.add_argument("--beta", type=float, default=default_params["beta"])
+parser.add_argument("--beta1", type=float, default=default_params["beta1"])
+parser.add_argument("--beta2", type=float, default=default_params["beta2"])
+parser.add_argument("--epsilon", type=float, default=default_params["epsilon"])
+parser.add_argument("--weight_decay", type=float, default=default_params["weight_decay"])
+parser.add_argument("--weight_init", type=str, default=default_params["weight_init"])
+parser.add_argument("--hidden_layers", type=int, default=default_params["hidden_layers"])
+parser.add_argument("--neurons", type=int, default=default_params["neurons"])
+parser.add_argument("--activation", type=str, default=default_params["activation"])
+parser.add_argument("--sweep", action="store_true")
 args = parser.parse_args()
-parameters_dict = vars(args)
-parameters_dict["input_size"] = 784
-parameters_dict["output_size"] = 10
-parameters_dict["output_activation"] = "softmax"
-parameters_dict["hidden_size"] = parameters_dict["neurons"]
-parameters_dict["num_layers"] = parameters_dict["hidden_layers"]
-INPUT_SIZE = parameters_dict["input_size"]
-OUTPUT_SIZE = parameters_dict["output_size"]
+default_params = vars(args)
+default_params["input_size"] = 784
+default_params["output_size"] = 10
+default_params["output_activation"] = "softmax"
+default_params["hidden_size"] = default_params["neurons"]
+default_params["num_layers"] = default_params["hidden_layers"]
+INPUT_SIZE = default_params["input_size"]
+OUTPUT_SIZE = default_params["output_size"]
 
 class FFNeuralNetwork:
     def __init__(self, hidden_units, num_hidden_layers, input_dim, output_dim, weight_init="random", output_activation="softmax", initialize=True):
@@ -88,18 +87,18 @@ class FFNeuralNetwork:
         self.post_activation.append(a_out)
         return a_out
     def activation(self, x):
-        if parameters_dict["activation"] == "sigmoid":
+        if default_params["activation"] == "sigmoid":
             return 1 / (1 + np.exp(-x))
-        elif parameters_dict["activation"] == "tanh":
+        elif default_params["activation"] == "tanh":
             return np.tanh(x)
-        elif parameters_dict["activation"] == "relu":
+        elif default_params["activation"] == "relu":
             return np.maximum(0, x)
         else:
             return x
 
 class ActivationFunctions:
-    functions = {"identity": lambda x: x, "sigmoid": lambda x: 1 / (1 + np.exp(-x)), "tanh": np.tanh, "relu": lambda x: np.maximum(0, x)}
-    derivatives = {"identity": lambda a: np.ones_like(a), "sigmoid": lambda a: a * (1 - a), "tanh": lambda a: 1 - a ** 2, "relu": lambda a: (a > 0).astype(int)}
+    functions = {"identity": lambda x: x, "sigmoid": lambda x: 1/(1+np.exp(-x)), "tanh": np.tanh, "relu": lambda x: np.maximum(0, x)}
+    derivatives = {"identity": lambda a: np.ones_like(a), "sigmoid": lambda a: a*(1-a), "tanh": lambda a: 1 - a**2, "relu": lambda a: (a > 0).astype(int)}
 
 def get_activation_derivative(a, activation_name):
     return ActivationFunctions.derivatives[activation_name](a)
@@ -193,7 +192,7 @@ def loss(loss_type, y, y_pred):
     if loss_type == "cross_entropy":
         return -np.sum(y * np.log(y_pred + 1e-8))
     elif loss_type == "mean_squared_error":
-        return np.sum((y - y_pred)**2) / 2
+        return np.sum((y - y_pred) ** 2) / 2
     else:
         raise Exception("Invalid loss function")
 
@@ -211,33 +210,33 @@ def load_data(type, dataset='mnist'):
         y_test = np.eye(10)[y_test]
         return x_test, y_test
 
-run = wandb.init(project=parameters_dict["wandb_project"], entity=parameters_dict["wandb_entity"], config=parameters_dict)
-run.name = f"opt_{parameters_dict['optimizer']}_lr_{parameters_dict['learning_rate']}_act_{parameters_dict['activation']}_hid_{parameters_dict['num_layers']}_nrns_{parameters_dict['hidden_size']}_randn_" + str(np.random.randint(1000))
-nn = FFNeuralNetwork(neurons=parameters_dict["hidden_size"], num_hidden_layers=parameters_dict["num_layers"], input_dim=INPUT_SIZE, output_dim=OUTPUT_SIZE, act_func=parameters_dict["activation"], weight_init=parameters_dict["weight_init"], out_act_func="softmax", init_toggle=True)
-bp = Backpropagation(nn=nn, loss=parameters_dict["loss"], act_func=parameters_dict["activation"])
-opt = Optimizer(nn=nn, bp=bp, lr=parameters_dict["learning_rate"], optimizer=parameters_dict["optimizer"], momentum=parameters_dict["momentum"], beta=parameters_dict["beta"], beta1=parameters_dict["beta1"], beta2=parameters_dict["beta2"], epsilon=parameters_dict["epsilon"], t=0, decay=parameters_dict["weight_decay"])
-x_train, y_train = load_data(type="train", dataset=parameters_dict["dataset"])
-x_test, y_test = load_data(type="test", dataset=parameters_dict["dataset"])
+run = wandb.init(project=default_params["wandb_project"], entity=default_params["wandb_entity"], config=default_params)
+run.name = f"opt_{default_params['optimizer']}_lr_{default_params['learning_rate']}_act_{default_params['activation']}_hid_{default_params['hidden_layers']}_nrns_{default_params['neurons']}_randn_" + str(np.random.randint(1000))
+nn = FFNeuralNetwork(neurons=default_params["neurons"], num_hidden_layers=default_params["hidden_layers"], input_dim=INPUT_SIZE, output_dim=OUTPUT_SIZE, act_func=default_params["activation"], weight_init=default_params["weight_init"], out_act_func="softmax", init_toggle=True)
+bp = Backpropagation(nn=nn, loss=default_params["loss"], act_func=default_params["activation"])
+opt = Optimizer(nn=nn, lr=default_params["learning_rate"], optimizer=default_params["optimizer"], momentum=default_params["momentum"], beta=default_params["beta"], beta1=default_params["beta1"], beta2=default_params["beta2"], epsilon=default_params["epsilon"], t=0, decay=default_params["weight_decay"])
+x_train, y_train = load_data(type="train", dataset=default_params["dataset"])
+x_test, y_test = load_data(type="test", dataset=default_params["dataset"])
 x_train_act, x_val, y_train_act, y_val = train_test_split(x_train, y_train, test_size=0.1)
-for epoch in range(parameters_dict["epochs"]):
-    for i in range(0, x_train_act.shape[0], parameters_dict["batch_size"]):
-        x_batch = x_train_act[i:i+parameters_dict["batch_size"]]
-        y_batch = y_train_act[i:i+parameters_dict["batch_size"]]
+for epoch in range(default_params["epochs"]):
+    for i in range(0, x_train_act.shape[0], default_params["batch_size"]):
+        x_batch = x_train_act[i:i+default_params["batch_size"]]
+        y_batch = y_train_act[i:i+default_params["batch_size"]]
         y_pred = nn.forward(x_batch)
         d_weights, d_biases = bp.backward(y_batch, y_pred)
         opt.run(d_weights, d_biases)
     opt.t += 1
     y_pred = nn.forward(x_train_act)
-    train_loss = loss(parameters_dict["loss"], y_train_act, y_pred)
+    train_loss = loss(default_params["loss"], y_train_act, y_pred)
     train_accuracy = np.sum(np.argmax(y_pred, axis=1) == np.argmax(y_train_act, axis=1)) / y_train_act.shape[0]
-    val_loss = loss(parameters_dict["loss"], y_val, nn.forward(x_val))
+    val_loss = loss(default_params["loss"], y_val, nn.forward(x_val))
     val_accuracy = np.sum(np.argmax(nn.forward(x_val), axis=1) == np.argmax(y_val, axis=1)) / y_val.shape[0]
     print("Epoch: {}".format(epoch+1))
     print("Train Accuracy: {}".format(train_accuracy))
     print("Validation Accuracy: {}".format(val_accuracy))
     wandb.log({"epoch": epoch+1, "train_loss": train_loss, "train_accuracy": train_accuracy, "val_loss": val_loss, "val_accuracy": val_accuracy})
 y_pred_test = nn.forward(x_test)
-test_loss = loss(parameters_dict["loss"], y_test, y_pred_test)
+test_loss = loss(default_params["loss"], y_test, y_pred_test)
 test_accuracy = np.sum(np.argmax(y_pred_test, axis=1) == np.argmax(y_test, axis=1)) / y_test.shape[0]
 print("Test Accuracy: {}".format(test_accuracy))
 wandb.log({"test_loss": test_loss, "test_accuracy": test_accuracy})
