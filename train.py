@@ -6,10 +6,10 @@ from sklearn.model_selection import train_test_split
 from keras.datasets import fashion_mnist, mnist
 import wandb
 
-default_params = {
+parameters_dict = {
     "wandb_project": "SWEEP_PROJECT01",
     "wandb_entity": "your_entity_name",
-    "dataset": "fashion_mnist",
+    "dataset": "mnist",
     "epochs": 5,
     "batch_size": 64,
     "loss": "cross_entropy",
@@ -25,7 +25,7 @@ default_params = {
     "hidden_layers": 3,
     "neurons": 64
 }
-default_params["activation"] = "sigmoid"
+parameters_dict["activation"] = "sigmoid"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--wandb_project", type=str, default=default_params["wandb_project"], help="WandB project name")
