@@ -36,6 +36,9 @@ DeepLearningA1 is a repository for Deep Learning Assignment 1 by [Mukunthan Siva
 - **Training of the model along with generation of plots (loss curves, accuracy trends, and confusion matrices).
 - **Optionally, integration with WandB for experiment tracking.
 
+## Report Link : https://api.wandb.ai/links/cs24m026-iit-madras-foundation/jk6qifao
+## Github Link : https://github.com/mukunthans/DeepLearningA1
+
 ## Experiments and Results
 
 The project conducts experiments with different loss functions and optimizers. Although both cross entropy and squared error loss may yield similar accuracy, cross entropy is typically preferred for classification because it produces stronger gradients for incorrect predictions, leading to faster convergence and more effective learning. The notebook automatically generates plots to visualize these differences and provides confusion matrices to further assess model performance.
